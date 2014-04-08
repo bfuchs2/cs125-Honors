@@ -56,3 +56,15 @@ class Ghost
     end
   end
 end
+
+class AI
+  def initialize
+    @@numAI += 1 #keeps track of how many AIs have been created so that each one is different
+    
+  end
+  
+  def move(locations)
+    return locations[0] #obviously this will need to be more fleshed out
+  end
+  
+end
