@@ -19,7 +19,7 @@ class Map
     @width = lines[0].size
     @tiles = Array.new(@width) do |x|
       Array.new(@height) do |y|
-        case lines[y][x, 1]
+        case lines[y][x]
           when '#'
             Tiles::Wall
           else
@@ -28,8 +28,36 @@ class Map
       end
     end
   end
-
-
+  
+  def getSurrounding(x, y)#returns a list of the coords surrounding (x, y) that can be walked on
+    array = []
+    if(@tiles[x][y + 1])
+      array.push([x, y+1])
+    end
+    if(@tiles[x + 1][y + 1])
+      array.push([x + 1, y + 1])
+    end
+    if(@tiles[x + 1][y])
+      array.push([x + 1, y])
+    end
+    if(@tiles[x + 1][y - 1])
+      array.push([x + 1, y-1])
+    end
+    if(@tiles[x][y - 1])
+      array.push([x, y -1])
+    end
+    if(@tiles[x - 1][y - 1])
+      array.push([x - 1, y - 1])
+    end
+    if(@tiles[x - 1][y])
+      array.push([x - 1, y])
+    end
+    if(@tiles[x - 1][y + 1])
+      array.push([x - 1, y + 1])
+    end
+    array
+  end
+  
   def draw
     @height.times do |y|
       @width.times do|x|
@@ -50,8 +78,8 @@ class Game < Window
   attr_reader :map
   def initialize
     super 640, 480, false
-    self.caption = "Honors Project"
     @map = Map.new(self, "media/Test Map.txt")
+    self.caption = "Honors Project"
     @background = Image.new(self, "media/Space.png", true)
   end
 
