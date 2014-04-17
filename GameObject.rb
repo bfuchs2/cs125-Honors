@@ -1,3 +1,7 @@
+require_relative 'Map'
+require 'rubygems'
+require'gosu'
+include Gosu
 module Direction
   Up = 0
   Right = 1
@@ -11,7 +15,8 @@ class GameObject
     @@SPEED = 3
     @x, @y = x, y
     @map = window.map
-    @tilesize = window.map.tilesize
+    puts @map
+    @tilesize = @map.tilesize
   end
   #Checks Top right, Top left, Bottom right, and Bottom left corners for collision
   def isValid?(newx,newy)
@@ -28,13 +33,13 @@ class GameObject
       @dir = dir
     end
     if(dir == Direction::Down)
-      @@SPEED.times { if isValid?(0, 1); @y+=1; end}
+      @@SPEED.times { if isValid?(0, 1); @y+=1 end}
     elsif(dir == Direction::Left)
-      @@SPEED.times { if isValid?(-1, 0); @x-=1; end}
+      @@SPEED.times { if isValid?(-1, 0); @x-=1 end}
     elsif(dir == Direction::Up)
-      @@SPEED.times { if isValid?(0, -1); @y-=1; end}
+      @@SPEED.times { if isValid?(0, -1); @y-=1 end}
     elsif(dir == Direction::Right)
-      @@SPEED.times { if isValid?(1, 0); @x+=1; end}
+      @@SPEED.times { if isValid?(1, 0); @x+=1 end}
     end
     # if vx > 0
       # vx.times { if isValid?(vx+1,vy); @x+=vx; end}
@@ -48,6 +53,11 @@ class GameObject
     # if vy < 0
       # (-vy).times { if isValid?(vx,vy+2); @y-=vy; end}
     # end
+    if(@x < 0)
+      @x += (@map.width * @tilesize)
+    elsif(@x > (@map.width * @tilesize))
+      @x -= (@map.width * @tilesize)
+    end
   end
 end
 
