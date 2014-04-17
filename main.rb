@@ -36,17 +36,12 @@ class Game < Window
       @fail = true
       if button_down? KbEscape then close end
     end
-    vx = vy = 0
-    if button_down? KbRight
-      vx += 1
-    elsif button_down? KbLeft
-      vx -= 1
-    elsif button_down? KbUp
-      vy += 1
-    elsif button_down? KbDown
-      vy -= 1
-    end
-    @player.update(vx, vy)  
+    dir = Direction::Still
+    dir = Direction::Right if button_down? KbRight
+    dir = Direction::Left if button_down? KbLeft
+    dir = Direction::Up if button_down? KbUp
+    dir = Direction::Down if button_down? KbDown
+    @player.update(dir)   
     else
       if button_down? KbEscape
         close

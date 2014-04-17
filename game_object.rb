@@ -1,9 +1,18 @@
 require 'gosu'
 include Gosu
 
+module Direction
+  Up = 0
+  Right = 1
+  Down = 2
+  Left = 3
+  Still = 4 #for when the object isn't moving
+end
+
 class GameObject
   attr_reader :x, :y
   def initialize(window, x, y, image)
+    @@SPEED = 1
     @x, @y = x, y
     @map = window.map
     @tilesize = window.map.tilesize
@@ -18,18 +27,20 @@ class GameObject
   def warp(newx, newy)
     @x, @y = newx, newy
   end
-  def update(vx,vy)
-    if vx > 0
-      vx.times { if isValid?(vx+1,vy); @x+=vx; end}
+  def update(dir = @dir)
+    if(dir == Direction::Still)
+      dir = @dir
+    else
+      @dir = dir
     end
-    if vx < 0
-      (-vx).times { if isValid?(vx-1,vy); @x+=vx; end}
-    end
-    if vy > 0
-      vy.times { if isValid?(vx,vy-2); @y-=vy; end}
-    end
-    if vy < 0
-      (-vy).times { if isValid?(vx,vy+2); @y-=vy; end}
+    if(dir == Direction::Down)
+      @@SPEED.times { if isValid?(0, 1); @y+=1; end}
+    elsif(dir == Direction::Left)
+      @@SPEED.times { if isValid?(-1, 0); @x-=1; end}
+    elsif(dir == Direction::Up)
+      @@SPEED.times { if isValid?(0, -1); @y-=1; end}
+    elsif(dir == Direction::Right)
+      @@SPEED.times { if isValid?(1, 0); @x+=1; end}
     end
   end
 end
