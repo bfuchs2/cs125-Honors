@@ -2,6 +2,7 @@ require 'rubygems'
 require 'gosu'
 #require_relative 'Main'
 #require_relative 'Sprite'
+require_relative 'game_object'
 include Gosu
 
 module Tiles
@@ -61,7 +62,7 @@ class Map
     end
     array
   end
-  
+
   def draw
     @height.times do |y|
       @width.times do|x|
@@ -80,5 +81,3 @@ class Map
     @tiles[x/@tilesize][y/@tilesize] == Tiles::Wall
   end
 end
-
-
