@@ -11,11 +11,14 @@ end
 
 class GameObject
   attr_reader :x, :y
+  attr_accessor :dir
+    
   def initialize(window, x, y, image)
     @@SPEED = 1
     @x, @y = x, y
     @map = window.map
     @tilesize = window.map.tilesize
+    @dir = 4
   end
   #Checks Top right, Top left, Bottom right, and Bottom left corners for collision
   def isValid?(newx,newy)
@@ -55,15 +58,5 @@ class Player < GameObject
   end
   def fail?(player_x, player_y, ghost_x, ghost_y)
     player_x/@tilesize == ghost_x/@tilesize && player_y/@tilesize == ghost_y/@tilesize
-  end
-end
-
-class Ghost < GameObject
-  def initialize(window, x, y, image)
-    super
-    @image, @image2, @image3, @image4 = *Image.load_tiles(window, image, 15, 15, false)
-  end
-    def draw()
-    @image.draw(@x, @y, 1, 1.0, 1.0)
   end
 end
