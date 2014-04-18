@@ -14,7 +14,7 @@ class GameObject
   attr_accessor :dir
     
   def initialize(window, x, y, image)
-    @@SPEED = 1
+    @@SPEED = 3
     @x, @y = x, y
     @map = window.map
     @tilesize = window.map.tilesize
@@ -44,6 +44,16 @@ class GameObject
       @@SPEED.times { if isValid?(0, -1); @y-=1; end}
     elsif(dir == Direction::Right)
       @@SPEED.times { if isValid?(1, 0); @x+=1; end}
+    end
+    if(@x < 0)#makes objects wrap around the map
+      @x += @map.width*@tilesize
+    elsif(@x > @map.width*@tilesize)
+      @x -= @map.width*@tilesize
+    end
+    if(@y < 0)
+      @y += @map.height*@tilesize
+    elsif(@y > @map.height*@tilesize)
+      @y -= @map.height*@tilesize
     end
   end
 end
