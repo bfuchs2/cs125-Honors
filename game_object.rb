@@ -30,19 +30,29 @@ class GameObject
   def warp(newx, newy)
     @x, @y = newx, newy
   end
-  def update(dir = @dir)
-    if(dir == Direction::Still)
-      dir = @dir
-    else
-      @dir = dir
+  
+  def changeDir(dir = @dir)
+    #only lets you change direction if you can move in that direction
+    if(@dir == Direction::Down)
+    return if !isValid?(0, 1)
+    elsif(@dir == Direction::Left)
+      return if !isValid?(-1, 0)
+    elsif(@dir == Direction::Up)
+      return if isValid?(0, -1)
+    elsif(@dir == Direction::Right)
+      return if isValid?(1, 0)
     end
-    if(dir == Direction::Down)
+    @dir = dir
+  end
+    
+  def update
+    if(@dir == Direction::Down)
       @@SPEED.times { if isValid?(0, 1); @y+=1; end}
-    elsif(dir == Direction::Left)
+    elsif(@dir == Direction::Left)
       @@SPEED.times { if isValid?(-1, 0); @x-=1; end}
-    elsif(dir == Direction::Up)
+    elsif(@dir == Direction::Up)
       @@SPEED.times { if isValid?(0, -1); @y-=1; end}
-    elsif(dir == Direction::Right)
+    elsif(@dir == Direction::Right)
       @@SPEED.times { if isValid?(1, 0); @x+=1; end}
     end
     if(@x < 0)#makes objects wrap around the map

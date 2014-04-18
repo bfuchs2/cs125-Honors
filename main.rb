@@ -36,13 +36,15 @@ class Game < Window
       @fail = true
       if button_down? KbEscape then close end
     end
-    dir = Direction::Still
     dir = Direction::Right if button_down? KbRight
     dir = Direction::Left if button_down? KbLeft
     dir = Direction::Up if button_down? KbUp
     dir = Direction::Down if button_down? KbDown
-    @player.update(dir)  
-    @ghost.move() 
+    if(dir)
+      @player.changeDir(dir)
+    end
+    @player.update
+    @ghost.move
     else
       if button_down? KbEscape
         close

@@ -11,8 +11,6 @@ require_relative 'game_object'
 # Please go through the new code to see if I missed something
 # Michael
 
-
-
 class Ghost < GameObject
   attr_accessor :count
   def initialize(window, x, y, image)
@@ -29,17 +27,7 @@ class Ghost < GameObject
       if @count == 16
         @count = 0
       end
-      if @dir == 0
-        update(0, 1) #going up
-      elsif @dir == 1
-        update(1, 0) #going to the right
-      elsif @dir == 2
-        @ghost.update(0, -1) #take it back now yall (down)
-      elsif @dir == 3
-        @ghost.update(-1, 0) #going to the left
-      else 
-        @ghost.update(0, 0) 
-      end
+      self.update
       dir=(dir)
       return
     end
@@ -58,32 +46,12 @@ class Ghost < GameObject
     end
 
     tempdir = posdir.sample
-    if tempdir == 1
-      update(tempdir) #going to the right
-    elsif tempdir == 3
-      update(tempdir) #going to the left
-    elsif tempdir == 2
-      update(tempdir) #take it back now yall (down)
-    elsif tempdir == 0
-      update(tempdir) #going up
-    else 
-      update(4) 
+    if tempdir != Direction::Still #i.e. if it is moving
+      update
     end
     dir=(tempdir)
     if tempdir != dir
       @count += 1
     end
   end
-end
-
-class AI
-  def initialize
-    @@numAI += 1 #keeps track of how many AIs have been created so that each one is different
-    
-  end
-  
-  def move(locations)
-    return locations[0] #obviously this will need to be more fleshed out
-  end
-  
 end

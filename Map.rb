@@ -13,7 +13,7 @@ end
 class Map
   attr_reader :width, :height, :tilesize
   def initialize(window, filename)
-    @rand = Random.new(1234)
+    @rand = Random.new(3)
     #Loads 20x20 pix tileset
     #two @s means it's a static variable
     @tileset = Image.load_tiles(window, "media/Test Tileset.png", 20, 20, true)
