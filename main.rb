@@ -6,7 +6,7 @@ class Game < Window
   def initialize
     super 720, 540, false
     self.caption = "Honors Project"
-    @map = Map.new(self, "media/Test Map.txt")
+    @map = Map.new(self)
     @background = Image.new(self, "media/Space.png", true)
     @player = Player.new(self, 255, 360, "media/Test Sprite.png")
     @ghost = Ghost.new(self, 180, 180, "media/Test Sprite Enemy.png")
@@ -15,6 +15,7 @@ class Game < Window
     @text = Image.new(self, "media/TestPause.png", true)
     @gameover = Image.new(self, "media/TestGameOver.png", true)
     @fail = false
+    
     def button_down(id)
       if id == KbP
         @pause = !@pause
@@ -42,7 +43,7 @@ class Game < Window
     dir = Direction::Up if button_down? KbUp
     dir = Direction::Down if button_down? KbDown
     if(dir)
-      puts @player.changeDir(dir) #prints if the direction was changed
+      @player.changeDir(dir)
     end
     @player.update
     @ghost.move

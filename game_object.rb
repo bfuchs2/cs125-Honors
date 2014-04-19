@@ -17,7 +17,7 @@ class GameObject
     @@SPEED = 3
     @x, @y = x, y
     @map = window.map
-    @tilesize = window.map.tilesize
+    @TILESIZE = window.map.TILESIZE
     @dir = 4
   end
   #Checks Top right, Top left, Bottom right, and Bottom left corners for collision
@@ -59,14 +59,14 @@ class GameObject
       @@SPEED.times { if isValid?(1, 0); @x+=1; end}
     end
     if(@x < 0)#makes objects wrap around the map
-      @x += @map.width*@tilesize
-    elsif(@x > @map.width*@tilesize)
-      @x -= @map.width*@tilesize
+      @x += @map.WIDTH*@TILESIZE
+    elsif(@x > @map.WIDTH*@TILESIZE)
+      @x -= @map.WIDTH*@TILESIZE
     end
     if(@y < 0)
-      @y += @map.height*@tilesize
-    elsif(@y > @map.height*@tilesize)
-      @y -= @map.height*@tilesize
+      @y += @map.HEIGHT*@TILESIZE
+    elsif(@y > @map.HEIGHT*@TILESIZE)
+      @y -= @map.HEIGHT*@TILESIZE
     end
   end
 end
@@ -80,6 +80,6 @@ class Player < GameObject
     @image.draw(@x, @y, 1, 1.0, 1.0)
   end
   def fail?(player_x, player_y, ghost_x, ghost_y)
-    player_x/@tilesize == ghost_x/@tilesize && player_y/@tilesize == ghost_y/@tilesize
+    player_x/@TILESIZE == ghost_x/@TILESIZE && player_y/@TILESIZE == ghost_y/@TILESIZE
   end
 end
