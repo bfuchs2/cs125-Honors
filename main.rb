@@ -2,7 +2,7 @@ require 'gosu'
 include Gosu
 
 class Game < Window
-  attr_reader :map
+  attr_reader :map, :player
   def initialize
     super 720, 540, false
     self.caption = "Honors Project"

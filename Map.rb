@@ -56,30 +56,31 @@ class Map
      @tiles
   end
   
-  def getSurrounding(x, y)#returns a list of the coords surrounding (x, y) that can be walked on
+  def getSurrounding(x, y, diag = true)
+    #returns a list of the coords surrounding (x, y) that can be walked on
     array = Array.new
     if(x < @tiles.length and @tiles[x][y + 1] == Tiles::Space)
       array.push([x, y+1])
     end
-    if(x + 1 < @tiles.length and @tiles[x + 1][y + 1] == Tiles::Space)
+    if(x + 1 < @tiles.length and @tiles[x + 1][y + 1] == Tiles::Space and diag)
       array.push([x + 1, y + 1])
     end
     if(x + 1< @tiles.length and @tiles[x + 1][y] == Tiles::Space)
       array.push([x + 1, y])
     end
-    if(x + 1< @tiles.length and @tiles[x + 1][y - 1] == Tiles::Space)
+    if(x + 1< @tiles.length and @tiles[x + 1][y - 1] == Tiles::Space and diag)
       array.push([x + 1, y-1])
     end
     if(x < @tiles.length and @tiles[x][y - 1] == Tiles::Space)
       array.push([x, y -1])
     end
-    if(x - 1< @tiles.length and @tiles[x - 1][y - 1] == Tiles::Space)
+    if(x - 1< @tiles.length and @tiles[x - 1][y - 1] == Tiles::Space and diag)
       array.push([x - 1, y - 1])
     end
     if(x - 1< @tiles.length and @tiles[x - 1][y] == Tiles::Space)
       array.push([x - 1, y])
     end
-    if(x - 1< @tiles.length and @tiles[x - 1][y + 1] == Tiles::Space)
+    if(x - 1< @tiles.length and @tiles[x - 1][y + 1] == Tiles::Space and diag)
       array.push([x - 1, y + 1])
     end
     array
