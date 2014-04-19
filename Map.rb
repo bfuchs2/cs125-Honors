@@ -44,7 +44,7 @@ class Map
      end
      for x in 0..@WIDTH-1
        for y in 0..@HEIGHT-1
-         if(getSurrounding(x, y).length < 2)
+         if(getSurrounding(x, y).length > 6)
            @tiles[x][y] = Tiles::Wall
          end
        end
@@ -58,28 +58,28 @@ class Map
   
   def getSurrounding(x, y)#returns a list of the coords surrounding (x, y) that can be walked on
     array = Array.new
-    if(x < @tiles.length and @tiles[x][y + 1] == Tiles::Wall)
+    if(x < @tiles.length and @tiles[x][y + 1] == Tiles::Space)
       array.push([x, y+1])
     end
-    if(x + 1 < @tiles.length and @tiles[x + 1][y + 1] == Tiles::Wall)
+    if(x + 1 < @tiles.length and @tiles[x + 1][y + 1] == Tiles::Space)
       array.push([x + 1, y + 1])
     end
-    if(x + 1< @tiles.length and @tiles[x + 1][y] == Tiles::Wall)
+    if(x + 1< @tiles.length and @tiles[x + 1][y] == Tiles::Space)
       array.push([x + 1, y])
     end
-    if(x + 1< @tiles.length and @tiles[x + 1][y - 1] == Tiles::Wall)
+    if(x + 1< @tiles.length and @tiles[x + 1][y - 1] == Tiles::Space)
       array.push([x + 1, y-1])
     end
-    if(x < @tiles.length and @tiles[x][y - 1] == Tiles::Wall)
+    if(x < @tiles.length and @tiles[x][y - 1] == Tiles::Space)
       array.push([x, y -1])
     end
-    if(x - 1< @tiles.length and @tiles[x - 1][y - 1] == Tiles::Wall)
+    if(x - 1< @tiles.length and @tiles[x - 1][y - 1] == Tiles::Space)
       array.push([x - 1, y - 1])
     end
-    if(x - 1< @tiles.length and @tiles[x - 1][y] == Tiles::Wall)
+    if(x - 1< @tiles.length and @tiles[x - 1][y] == Tiles::Space)
       array.push([x - 1, y])
     end
-    if(x - 1< @tiles.length and @tiles[x - 1][y + 1] == Tiles::Wall)
+    if(x - 1< @tiles.length and @tiles[x - 1][y + 1] == Tiles::Space)
       array.push([x - 1, y + 1])
     end
     array

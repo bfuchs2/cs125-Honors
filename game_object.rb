@@ -28,8 +28,8 @@ class GameObject
     not @map.solid?(@x+newx+8, @y+newy+8)
   end
   
-  def warp(newx, newy)
-    @x, @y = newx, newy
+  def warp(newCoords)
+    @x, @y = newCoords[0], newCoords[1]
   end
   
   def changeDir(dir)
