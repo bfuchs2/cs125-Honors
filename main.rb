@@ -11,6 +11,7 @@ class Game < Window
     @player = Player.new(self, 255, 360, "media/Test Sprite.png")
     @ghost = Ghost.new(self, 180, 180, "media/Test Sprite Enemy.png")
     @pause = false
+    @map.generate([@ghost, @player])
     @text = Image.new(self, "media/TestPause.png", true)
     @gameover = Image.new(self, "media/TestGameOver.png", true)
     @fail = false
@@ -41,7 +42,7 @@ class Game < Window
     dir = Direction::Up if button_down? KbUp
     dir = Direction::Down if button_down? KbDown
     if(dir)
-      @player.changeDir(dir)
+      puts @player.changeDir(dir) #prints if the direction was changed
     end
     @player.update
     @ghost.move

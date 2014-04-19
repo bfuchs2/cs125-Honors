@@ -13,7 +13,7 @@ end
 class Map
   attr_reader :width, :height, :tilesize
   def initialize(window, filename)
-    @rand = Random.new(3)
+    @rand = Random.new
     #Loads 20x20 pix tileset
     #two @s means it's a static variable
     @tileset = Image.load_tiles(window, "media/Test Tileset.png", 20, 20, true)
@@ -22,20 +22,22 @@ class Map
     lines = File.readlines(filename).map { |line| line.chomp }
     @height = lines.size
     @width = lines[0].size
-    generate
   end
   
-  def generate
+  def generate(objects)
      @tiles = Array.new(@width){ |i|
         Array.new(@height, Tiles::Space)
       }
-     for l in 0..@rand.rand(3..10) #generates horizontal lines randomly
+     for l in 0..10 #generates horizontal lines randomly
        line = [@rand.rand(@width), @rand.rand(@height), @rand.rand(1..10)] #format [midx, midy, length]
        for mover in line[0]-line[2]/2..line[0]+line[2]/2
-         @tiles[mover][line[1]] = Tiles::Wall
+         begin
+          @tiles[mover][line[1]] = Tiles::Wall
+         rescue
+         end
        end
      end
-     for l in 0..@rand.rand(3..10) #same thing now with vertical lines
+     for l in 0..10 #same thing now with vertical lines
        line = [@rand.rand(@width), @rand.rand(@height), @rand.rand(1..10)] #format [midx, midy, length]
        for mover in line[1]-line[2]/2..line[1]+line[2]/2
          @tiles[line[0]][mover] = Tiles::Wall
@@ -47,6 +49,10 @@ class Map
            @tiles[x][y] = Tiles::Wall
          end
        end
+     end
+     #makes sure there's room for the game objects to spawn
+     objects.each do |go|
+       @tiles[go.x/@tilesize][go.y/@tilesize] = Tiles::Space
      end
      @tiles
   end

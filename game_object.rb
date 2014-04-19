@@ -27,22 +27,25 @@ class GameObject
     not @map.solid?(@x+newx, @y+newy+8) and
     not @map.solid?(@x+newx+8, @y+newy+8)
   end
+  
   def warp(newx, newy)
     @x, @y = newx, newy
   end
   
   def changeDir(dir = @dir)
     #only lets you change direction if you can move in that direction
-    if(@dir == Direction::Down)
-    return if !isValid?(0, 1)
-    elsif(@dir == Direction::Left)
-      return if !isValid?(-1, 0)
-    elsif(@dir == Direction::Up)
-      return if isValid?(0, -1)
-    elsif(@dir == Direction::Right)
-      return if isValid?(1, 0)
+    #returns true if the direction was changed
+    if(@dir == Direction::Down and isValid?(0, 1))
+      return false
+    elsif(@dir == Direction::Left and isValid?(-1, 0))
+      return false
+    elsif(@dir == Direction::Up and isValid?(0, -1))
+      return false
+    elsif(@dir == Direction::Right and isValid?(1, 0))
+      return false
     end
     @dir = dir
+    true
   end
     
   def update
