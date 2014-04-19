@@ -32,16 +32,16 @@ class GameObject
     @x, @y = newx, newy
   end
   
-  def changeDir(dir = @dir)
+  def changeDir(dir)
     #only lets you change direction if you can move in that direction
     #returns true if the direction was changed
-    if(@dir == Direction::Down and isValid?(0, 1))
+    if(dir == Direction::Down and !isValid?(0, 1))
       return false
-    elsif(@dir == Direction::Left and isValid?(-1, 0))
+    elsif(dir == Direction::Left and !isValid?(-1, 0))
       return false
-    elsif(@dir == Direction::Up and isValid?(0, -1))
+    elsif(dir == Direction::Up and !isValid?(0, -1))
       return false
-    elsif(@dir == Direction::Right and isValid?(1, 0))
+    elsif(dir == Direction::Right and !isValid?(1, 0))
       return false
     end
     @dir = dir
