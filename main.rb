@@ -2,7 +2,7 @@ require 'gosu'
 include Gosu
 
 class Game < Window
-  attr_reader :map, :player
+  attr_reader :map, :player, :ghost
   def initialize
     super 720, 540, false
     self.caption = "Honors Project"
@@ -15,11 +15,20 @@ class Game < Window
     @text = Image.new(self, "media/TestPause.png", true)
     @gameover = Image.new(self, "media/TestGameOver.png", true)
     @fail = false
-    
-    def button_down(id)
-      if id == KbP
-        @pause = !@pause
-      end
+  end
+  
+  def reset
+    @map = Map.new(self)
+    @player = Player.new(self, 255, 360, "media/Test Sprite.png")
+    @ghost = Ghost.new(self, 180, 180, "media/Test Sprite Enemy.png")
+    @pause = false
+    @map.generate([@ghost, @player])
+    @fail = false
+  end
+  
+  def button_down(id)
+    if id == KbP
+      @pause = !@pause
     end
   end
 
@@ -47,10 +56,10 @@ class Game < Window
     end
     @player.update
     @ghost.move
-    else
-      if button_down? KbEscape
-        close
-      end
+    elsif button_down? KbEscape
+      close
+    elsif @fail and button_down? KbR
+      reset
     end
   end      
 end

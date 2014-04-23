@@ -60,25 +60,25 @@ class Map
     #returns a list of the coords surrounding (x, y) that can be walked on
     array = Array.new
     if(x < @tiles.length and @tiles[x][y + 1] == Tiles::Space)
-      array.push([x, y+1])
+      array.push([x, y+1, Direction::Down])
     end
     if(x + 1 < @tiles.length and @tiles[x + 1][y + 1] == Tiles::Space and diag)
       array.push([x + 1, y + 1])
     end
     if(x + 1< @tiles.length and @tiles[x + 1][y] == Tiles::Space)
-      array.push([x + 1, y])
+      array.push([x + 1, y, Direction::Right])
     end
     if(x + 1< @tiles.length and @tiles[x + 1][y - 1] == Tiles::Space and diag)
       array.push([x + 1, y-1])
     end
     if(x < @tiles.length and @tiles[x][y - 1] == Tiles::Space)
-      array.push([x, y -1])
+      array.push([x, y -1, Direction::Up])
     end
     if(x - 1< @tiles.length and @tiles[x - 1][y - 1] == Tiles::Space and diag)
       array.push([x - 1, y - 1])
     end
     if(x - 1< @tiles.length and @tiles[x - 1][y] == Tiles::Space)
-      array.push([x - 1, y])
+      array.push([x - 1, y, Direction::Left])
     end
     if(x - 1< @tiles.length and @tiles[x - 1][y + 1] == Tiles::Space and diag)
       array.push([x - 1, y + 1])

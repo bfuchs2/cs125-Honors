@@ -15,43 +15,27 @@ class Ghost < GameObject
   attr_accessor :count
   def initialize(window, x, y, image)
     super
+    @player = window.player
     @image, @image2, @image3, @image4 = *Image.load_tiles(window, image, 15, 15, false)
     @count = 0
   end
-  def draw()
+  def draw
     @image.draw(@x, @y, 1, 1.0, 1.0)
   end
-  def move()
-    if @count != 0
-      @count += 1
-      if @count == 16
-        @count = 0
-      end
-      self.update
-      dir=(dir)
-      return
-    end
-    posdir= Array.new
-    if isValid?(@x + 15, @y) && dir !=3
-      posdir.push(1)  
-    end
-    if isValid?(@x-1, @y) && dir != 1
-      posdir.push(3)
-    end
-    if isValid?(@x, @y+15) && dir !=0
-      posdir.push(2)
-    end
-    if isValid?(@x, @y-1) && dir != 2
-      posdir.push(0)
-    end
-
-    tempdir = posdir.sample
-    if tempdir != Direction::Still #i.e. if it is moving
-      update
-    end
-    dir=(tempdir)
-    if tempdir != dir
-      @count += 1
-    end
+  
+  def move
+    @count = 0 #makes sure the ghost only moves sometimes
+    posdir= @map.getSurrounding(@x/@TILESIZE, @y/@TILESIZE, false)
+    posdir.collect!{|i| i.collect{|x| x * 15}}
+    tempdir = [@x, @y, Direction::Still*@TILESIZE]
+    #decision making happens here, should be more fleshed out
+    posdir.each{ |loc|
+    if ((loc[0] - @player.x)**2 + (loc[1] - @player.y)**2 < (tempdir[0] - @player.x)**2 + (tempdir[1] - @player.y)**2)
+      tempdir = loc    
+    end          
+    }#end decision making 
+    self.changeDir(tempdir[2]/@TILESIZE)
+    update
   end
+  
 end
