@@ -24,7 +24,6 @@ class Ghost < GameObject
   end
   
   def move
-    @count = 0 #makes sure the ghost only moves sometimes
     posdir= @map.getSurrounding(@x/@TILESIZE, @y/@TILESIZE, false)
     posdir.collect!{|i| i.collect{|x| x * 15}}
     tempdir = [@x, @y, Direction::Still*@TILESIZE]
@@ -38,4 +37,53 @@ class Ghost < GameObject
     update
   end
   
+  #an implementation of A * 
+  #for a better explanation: en.wikipedia.org/wiki/A*_search_algorithm
+  def aStar(tx = @player.x/@TILESIZE, ty = @player.y/@TILESIZE, x = @x/@TILESIZE, y = @y/@TILESIZE)
+    evald = Array.new #nodes that have already been evaluated
+    queue = [Node.new(x, y, nil, 0)]#the last element is the g value
+    from = Array.new #nodes that have already been navigated
+    until queue.empty?
+      current = queue[0]
+      queue.each{ |i| current = i  if(i.f < current.f)}
+      from.push(current)#move current from 'queue' to 'from'
+      queue.delete(current)
+      #direction from the second node aka the one after the one the ghost is at
+      return from[1][2] if current == [tx, ty]
+      @map.getSurrounding(current[0], current[1], false).each{ |n|
+        node = Node.toNode(n)
+        node.g= current.g + 1
+        nodeInEvald = false
+        evald.each{ |evNode|
+          if(evNode.x == node.x and evNode.y == node.y)
+            if(evNode.g <= node.g)
+              nodeInEvald = true
+              break
+            end
+          end
+        }
+        if nodeInEvald
+          #TODO continue implementation
+        end
+      }
+    end
+  end
+  
+end
+
+class Node # used by the A* function
+  attr_accessor :x, :y, :dir, :g, :h
+  def initialize(x, y, dir, g)
+    @x, @y, @dir, @g = x, y, dir, g
+  end
+  def toNode(array) #format: [x, y, dir]
+    Node.new(array[0], array[1], dir, nil)
+  end
+  def f
+    @g + @h
+  end
+  
+  def setH(tx, ty)
+    @h = (@x - tx).abs + (@y - ty).abs
+  end
 end
