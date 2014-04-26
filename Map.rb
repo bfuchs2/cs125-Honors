@@ -21,12 +21,12 @@ class Map
     #Reads map.txt line by line and turns it into tiles
     @HEIGHT = 30
     @WIDTH = 40
-  end
-  
-  def generate(objects)
      @tiles = Array.new(@WIDTH){ |i|
         Array.new(@HEIGHT, Tiles::Space)
       }
+  end
+  
+  def generate(objects)
      for l in 0..10 #generates horizontal lines randomly
        line = [@rand.rand(@WIDTH), @rand.rand(@HEIGHT), @rand.rand(1..10)] #format [midx, midy, length]
        for mover in line[0]-line[2]/2..line[0]+line[2]/2
@@ -62,25 +62,25 @@ class Map
     if(x < @tiles.length and @tiles[x][y + 1] == Tiles::Space)
       array.push([x, y+1, Direction::Down])
     end
-    if(x + 1 < @tiles.length and @tiles[x + 1][y + 1] == Tiles::Space and diag)
+    if(diag and x + 1 < @tiles.length and @tiles[x + 1][y + 1] == Tiles::Space)
       array.push([x + 1, y + 1])
     end
     if(x + 1< @tiles.length and @tiles[x + 1][y] == Tiles::Space)
       array.push([x + 1, y, Direction::Right])
     end
-    if(x + 1< @tiles.length and @tiles[x + 1][y - 1] == Tiles::Space and diag)
+    if(diag and x + 1< @tiles.length and @tiles[x + 1][y - 1] == Tiles::Space)
       array.push([x + 1, y-1])
     end
     if(x < @tiles.length and @tiles[x][y - 1] == Tiles::Space)
       array.push([x, y -1, Direction::Up])
     end
-    if(x - 1< @tiles.length and @tiles[x - 1][y - 1] == Tiles::Space and diag)
+    if(diag and x - 1< @tiles.length and @tiles[x - 1][y - 1] == Tiles::Space)
       array.push([x - 1, y - 1])
     end
     if(x - 1< @tiles.length and @tiles[x - 1][y] == Tiles::Space)
       array.push([x - 1, y, Direction::Left])
     end
-    if(x - 1< @tiles.length and @tiles[x - 1][y + 1] == Tiles::Space and diag)
+    if(diag and x - 1< @tiles.length and @tiles[x - 1][y + 1] == Tiles::Space)
       array.push([x - 1, y + 1])
     end
     array

@@ -45,25 +45,29 @@ class Ghost < GameObject
     queue = [Node.new(x, y, nil, 0)]#the last element is the g value
     from = Array.new #nodes that have already been navigated
     until queue.empty?
-      queue.each{ |q| print q.toArray, "..."}
-      print "\n" #TODO for debugging
-      current = queue[0]
+      #queue.each{ |q| print q.toArray, "..."}
+      #print "\n" #TODO for debugging
+      current = queue[0]#finds the node in queue with the lowest f value
       queue.each{ |i| current = i  if(i.f(tx, ty) < current.f(tx, ty))}
-      evald.push(current)#move current from 'queue' to 'from'
+      evald.push(current)#move current from 'queue' to 'evald'
       queue.delete(current)
       #direction from the second node aka the one after the one the ghost is at
-      return from[1][2] if current == [tx, ty]
-      #adds surrounding nodes to 
+      if current.x == tx and current.y == y
+        return evald[1].dir if evald[1]
+        return Direction::Still 
+      end
       @map.getSurrounding(current.x, current.y, false).each{ |n|
         node = Node.toNode(n)
         node.g= current.g + 1
         nodeInEvald = false
         evald.each{ |evNode|
           if(evNode.x == node.x and evNode.y == node.y)
-            if(evNode.g <= node.g)
-              nodeInEvald = true
-              break
+            if(evNode.g > node.g)
+              evNode.g = node.g
+              evvNode.dir = node.dir
             end
+            nodeInEvald = true
+            break
           end
         }
         if !nodeInEvald
@@ -82,7 +86,7 @@ class Node # used by the A* function
     @x, @y, @dir, @g = x, y, dir, g
   end
   def self.toNode(array) #format: [x, y, dir]
-    Node.new(array[0], array[1], @dir, nil)
+    Node.new(array[0], array[1], array[2], nil)
   end
   def f(tx, ty)
     @g + h(tx, ty)
@@ -92,6 +96,7 @@ class Node # used by the A* function
   end
   
   def h(tx, ty)
+    #calculates the manhattan distance between (x, y) and (tx, ty)
     (@x - tx).abs + (@y - ty).abs
   end
 end
