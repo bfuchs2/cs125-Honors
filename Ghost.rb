@@ -33,7 +33,8 @@ class Ghost < GameObject
       tempdir = loc    
     end          
     }#end decision making 
-    self.changeDir(tempdir[2]/@TILESIZE)
+    #self.changeDir(tempdir[2]/@TILESIZE) TODO make sure this works
+    self.changeDir(self.aStar)
     update
   end
   
@@ -44,13 +45,16 @@ class Ghost < GameObject
     queue = [Node.new(x, y, nil, 0)]#the last element is the g value
     from = Array.new #nodes that have already been navigated
     until queue.empty?
+      queue.each{ |q| print q.toArray, "..."}
+      print "\n" #TODO for debugging
       current = queue[0]
-      queue.each{ |i| current = i  if(i.f < current.f)}
-      from.push(current)#move current from 'queue' to 'from'
+      queue.each{ |i| current = i  if(i.f(tx, ty) < current.f(tx, ty))}
+      evald.push(current)#move current from 'queue' to 'from'
       queue.delete(current)
       #direction from the second node aka the one after the one the ghost is at
       return from[1][2] if current == [tx, ty]
-      @map.getSurrounding(current[0], current[1], false).each{ |n|
+      #adds surrounding nodes to 
+      @map.getSurrounding(current.x, current.y, false).each{ |n|
         node = Node.toNode(n)
         node.g= current.g + 1
         nodeInEvald = false
@@ -62,28 +66,32 @@ class Ghost < GameObject
             end
           end
         }
-        if nodeInEvald
-          #TODO continue implementation
+        if !nodeInEvald
+          queue.push(node)  
         end
       }
     end
+    nil
   end
   
 end
 
 class Node # used by the A* function
-  attr_accessor :x, :y, :dir, :g, :h
+  attr_accessor :x, :y, :dir, :g
   def initialize(x, y, dir, g)
     @x, @y, @dir, @g = x, y, dir, g
   end
-  def toNode(array) #format: [x, y, dir]
-    Node.new(array[0], array[1], dir, nil)
+  def self.toNode(array) #format: [x, y, dir]
+    Node.new(array[0], array[1], @dir, nil)
   end
-  def f
-    @g + @h
+  def f(tx, ty)
+    @g + h(tx, ty)
+  end
+  def toArray
+    [@x, @y, @dir, @g]
   end
   
-  def setH(tx, ty)
-    @h = (@x - tx).abs + (@y - ty).abs
+  def h(tx, ty)
+    (@x - tx).abs + (@y - ty).abs
   end
 end
