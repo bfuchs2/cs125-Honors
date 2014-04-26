@@ -32,9 +32,9 @@ class Ghost < GameObject
     if ((loc[0] - @player.x)**2 + (loc[1] - @player.y)**2 < (tempdir[0] - @player.x)**2 + (tempdir[1] - @player.y)**2)
       tempdir = loc    
     end          
-    }#end decision making 
-    #self.changeDir(tempdir[2]/@TILESIZE) TODO make sure this works
+    }#end decision making
     self.changeDir(self.aStar)
+    self.changeDir(tempdir[2]/@TILESIZE) if @dir == Direction::Still
     update
   end
   
@@ -43,17 +43,19 @@ class Ghost < GameObject
   def aStar(tx = @player.x/@TILESIZE, ty = @player.y/@TILESIZE, x = @x/@TILESIZE, y = @y/@TILESIZE)
     evald = Array.new #nodes that have already been evaluated
     queue = [Node.new(x, y, nil, 0)]#the last element is the g value
-    from = Array.new #nodes that have already been navigated
     until queue.empty?
       #queue.each{ |q| print q.toArray, "..."}
       #print "\n" #TODO for debugging
       current = queue[0]#finds the node in queue with the lowest f value
-      queue.each{ |i| current = i  if(i.f(tx, ty) < current.f(tx, ty))}
+      for i in 1..queue.length-1
+        current = queue[i] if queue[i].f(tx, ty) < current.f(tx, ty)
+      end
       evald.push(current)#move current from 'queue' to 'evald'
       queue.delete(current)
       #direction from the second node aka the one after the one the ghost is at
       if current.x == tx and current.y == y
         return evald[1].dir if evald[1]
+        print "the ghost is confused\n" #TODO for debugging
         return Direction::Still 
       end
       @map.getSurrounding(current.x, current.y, false).each{ |n|
@@ -96,7 +98,7 @@ class Node # used by the A* function
   end
   
   def h(tx, ty)
-    #calculates the manhattan distance between (x, y) and (tx, ty)
+    #calculates the Manhattan distance between (x, y) and (tx, ty)
     (@x - tx).abs + (@y - ty).abs
   end
 end
