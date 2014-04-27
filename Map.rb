@@ -19,8 +19,8 @@ class Map
     @TILESET = Image.load_tiles(window, "media/Test Tileset.png", 20, 20, true)
     @TILESIZE = 15
     #Reads map.txt line by line and turns it into tiles
-    @HEIGHT = 30
-    @WIDTH = 40
+    @HEIGHT = 540/15
+    @WIDTH = 720/15
      @tiles = Array.new(@WIDTH){ |i|
         Array.new(@HEIGHT, Tiles::Space)
       }
