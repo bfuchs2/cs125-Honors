@@ -24,17 +24,21 @@ class Ghost < GameObject
   end
   
   def move
-    posdir= @map.getSurrounding(@x/@TILESIZE, @y/@TILESIZE, false)
-    posdir.collect!{|i| i.collect{|x| x * 15}}
-    tempdir = [@x, @y, Direction::Still*@TILESIZE]
+    return @count += 1 if @count < @TILESIZE/@@SPEED
+    @count = 0
+    #posdir= @map.getSurrounding(@x/@TILESIZE, @y/@TILESIZE, false)
+    #posdir.collect!{|i| i.collect{|x| x * 15}}
+    #tempdir = [@x, @y, Direction::Still*@TILESIZE]
     #decision making happens here, should be more fleshed out
-    posdir.each{ |loc|
-    if ((loc[0] - @player.x)**2 + (loc[1] - @player.y)**2 < (tempdir[0] - @player.x)**2 + (tempdir[1] - @player.y)**2)
-      tempdir = loc    
-    end          
-    }#end decision making
-    self.changeDir(self.aStar)
-    self.changeDir(tempdir[2]/@TILESIZE) if @dir == Direction::Still
+    #posdir.each{ |loc|
+    #if ((loc[0] - @player.x)**2 + (loc[1] - @player.y)**2 < (tempdir[0] - @player.x)**2 + (tempdir[1] - @player.y)**2)
+    #  tempdir = loc    
+    #end          
+    #}#end decision making
+    node = self.aStar
+    self.warp(node.coords.collect{|i| i * @TILESIZE})
+    #self.changeDir(self.aStar)
+    #self.changeDir(tempdir[2]/@TILESIZE) if @dir == Direction::Still
     update
   end
   
@@ -45,7 +49,7 @@ class Ghost < GameObject
     queue = [Node.new(x, y, nil, 0)]#the last element is the g value
     until queue.empty?
       #queue.each{ |q| print q.toArray, "..."}
-      #print "\n" #TODO for debugging
+      #print "\n" #for debugging
       current = queue[0]#finds the node in queue with the lowest f value
       for i in 1..queue.length-1
         current = queue[i] if queue[i].f(tx, ty) < current.f(tx, ty)
@@ -53,17 +57,18 @@ class Ghost < GameObject
       evald.push(current)#move current from 'queue' to 'evald'
       queue.delete(current)
       #direction from the second node aka the one after the one the ghost is at
-      if current.x == tx and current.y == y
-        return evald[1].dir if evald[1]
-        print "the ghost is confused\n" #TODO for debugging
-        return Direction::Still 
+      if current.x == tx and current.y == ty
+        #TODO this is not the correct thing to return
+        return current.getTop
+        #print "the ghost is confused\n" # for debugging
       end
       @map.getSurrounding(current.x, current.y, false).each{ |n|
         node = Node.toNode(n)
         node.g= current.g + 1
+        node.parent= current
         nodeInEvald = false
         evald.each{ |evNode|
-          if(evNode.x == node.x and evNode.y == node.y)
+          if(evNode.coords == node.coords)
             if(evNode.g > node.g)
               evNode.g = node.g
               evvNode.dir = node.dir
@@ -83,7 +88,7 @@ class Ghost < GameObject
 end
 
 class Node # used by the A* function
-  attr_accessor :x, :y, :dir, :g
+  attr_accessor :x, :y, :dir, :g, :parent
   def initialize(x, y, dir, g)
     @x, @y, @dir, @g = x, y, dir, g
   end
@@ -93,6 +98,15 @@ class Node # used by the A* function
   def f(tx, ty)
     @g + h(tx, ty)
   end
+  #returns the second-to-top most node
+  def getTop
+    return @parent.getTop if @parent.parent
+    self
+  end
+  def coords
+    [@x, @y]
+  end
+  
   def toArray
     [@x, @y, @dir, @g]
   end
