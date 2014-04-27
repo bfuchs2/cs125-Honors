@@ -12,12 +12,13 @@ require_relative 'game_object'
 # Michael
 
 class Ghost < GameObject
-  attr_accessor :count
+  attr_accessor :count, :flank
   def initialize(window, x, y, image)
     super
     @player = window.player
     @image, @image2, @image3, @image4 = *Image.load_tiles(window, image, 15, 15, false)
     @count = 0
+    @flank = false
   end
   def draw
     @image.draw(@x, @y, 1, 1.0, 1.0)
@@ -35,8 +36,33 @@ class Ghost < GameObject
     #  tempdir = loc    
     #end          
     #}#end decision making
-    node = self.aStar
-    self.warp(node.coords.collect{|i| i * @TILESIZE})
+    if flank and @player.dir != Direction::Still
+      tx, ty = @player.x, @player.y
+      until(@map.solid?(tx, ty))
+        if(@player.dir == Direction::Down)
+          ty += 1
+        elsif(@player.dir == Direction::Left)
+          tx -= 1
+        elsif(@player.dir == Direction::Up)
+          ty -= 1
+        elsif(@player.dir == Direction::Right)
+          tx += 1
+        end
+      end
+      if(@player.dir == Direction::Down)
+        ty -= 1
+      elsif(@player.dir == Direction::Left)
+        tx += 1
+      elsif(@player.dir == Direction::Up)
+        ty += 1
+      elsif(@player.dir == Direction::Right)
+        tx -= 1
+      end
+      node = self.aStar(tx/@TILESIZE, ty/@TILESIZE)
+    else
+      node = self.aStar
+    end
+    self.warp(node.coords.collect{|i| i * @TILESIZE}) if node
     #self.changeDir(self.aStar)
     #self.changeDir(tempdir[2]/@TILESIZE) if @dir == Direction::Still
     update
@@ -45,6 +71,10 @@ class Ghost < GameObject
   #an implementation of A * 
   #for a better explanation: en.wikipedia.org/wiki/A*_search_algorithm
   def aStar(tx = @player.x/@TILESIZE, ty = @player.y/@TILESIZE, x = @x/@TILESIZE, y = @y/@TILESIZE)
+    #exit conditions
+    if tx > @map.WIDTH or ty > @map.HEIGHT or tx < 0 or ty < 0
+      return Node.new(x, y, nil, 0)
+    end
     evald = Array.new #nodes that have already been evaluated
     queue = [Node.new(x, y, nil, 0)]#the last element is the g value
     until queue.empty?

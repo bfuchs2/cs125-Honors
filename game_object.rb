@@ -45,7 +45,6 @@ class GameObject
       return false
     end
     @dir = dir
-    true
   end
     
   def update
@@ -79,7 +78,7 @@ class Player < GameObject
   def draw()
     @image.draw(@x, @y, 1, 1.0, 1.0)
   end
-  def fail?(player_x, player_y, ghost_x, ghost_y)
+  def fail?(ghost_x, ghost_y, player_x = @x, player_y = @y)
     player_x/@TILESIZE == ghost_x/@TILESIZE && player_y/@TILESIZE == ghost_y/@TILESIZE
   end
 end

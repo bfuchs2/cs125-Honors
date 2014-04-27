@@ -10,8 +10,10 @@ class Game < Window
     @background = Image.new(self, "media/Space.png", true)
     @player = Player.new(self, 255, 360, "media/Test Sprite.png")
     @ghost = Ghost.new(self, 180, 180, "media/Test Sprite Enemy.png")
+    @smartGhost = Ghost.new(self, 180, 200, "media/Test Sprite Enemy.png")
+    @smartGhost.flank = true
     @pause = false
-    @map.generate([@ghost, @player])
+    @map.generate([@ghost, @player, @smartGhost])
     @text = Image.new(self, "media/TestPause.png", true)
     @gameover = Image.new(self, "media/TestGameOver.png", true)
     @fail = false
@@ -21,8 +23,10 @@ class Game < Window
     @map = Map.new(self)
     @player = Player.new(self, 255, 360, "media/Test Sprite.png")
     @ghost = Ghost.new(self, 180, 180, "media/Test Sprite Enemy.png")
+    @smartGhost = Ghost.new(self, 180, 400, "media/Test Sprite Enemy.png")
+    @smartGhost.flank = true
     @pause = false
-    @map.generate([@ghost, @player])
+    @map.generate([@ghost, @player, @smartGhost])
     @fail = false
   end
   
@@ -37,13 +41,14 @@ class Game < Window
     @map.draw
     @player.draw
     @ghost.draw
+    @smartGhost.draw
     if @pause then @text.draw 270, 180, 50 end
     if @fail then @gameover.draw 270,180,50 end
   end
   
   def update
     if !@pause and !@fail
-    if @player.fail?(@player.x, @player.y, @ghost.x, @ghost.y)
+    if @player.fail?(@ghost.x, @ghost.y) or @player.fail?(@smartGhost.x, @smartGhost.y)
       @fail = true
       if button_down? KbEscape then close end
     end
@@ -56,6 +61,7 @@ class Game < Window
     end
     @player.update
     @ghost.move
+    @smartGhost.move
     elsif button_down? KbEscape
       close
     elsif @fail and button_down? KbR

@@ -7,3 +7,4 @@ include Gosu
 
 window = Game.new
 window.show
+#ghost_x, ghost_y
