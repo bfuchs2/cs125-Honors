@@ -12,23 +12,23 @@ end
 
 class Map
   attr_reader :WIDTH, :HEIGHT, :TILESIZE
-  def initialize(window)
-    @rand = Random.new
+  def initialize(window, pixelH, pixelW)
     #Loads 20x20 pix tileset
     #two @s means it's a static variable
     @TILESET = Image.load_tiles(window, "media/Test Tileset.png", 20, 20, true)
     @TILESIZE = 15
     #Reads map.txt line by line and turns it into tiles
-    @HEIGHT = 540/15
-    @WIDTH = 720/15
+    @HEIGHT = pixelH/@TILESIZE
+    @WIDTH = pixelW/@TILESIZE
      @tiles = Array.new(@WIDTH){ |i|
         Array.new(@HEIGHT, Tiles::Space)
       }
   end
   
   def generate(objects)
+    rand = Random.new
      for l in 0..10 #generates horizontal lines randomly
-       line = [@rand.rand(@WIDTH), @rand.rand(@HEIGHT), @rand.rand(1..10)] #format [midx, midy, length]
+       line = [rand.rand(@WIDTH), rand.rand(@HEIGHT), rand.rand(1..10)] #format [midx, midy, length]
        for mover in line[0]-line[2]/2..line[0]+line[2]/2
          begin
           @tiles[mover][line[1]] = Tiles::Wall
@@ -37,7 +37,7 @@ class Map
        end
      end
      for l in 0..10 #same thing now with vertical lines
-       line = [@rand.rand(@WIDTH), @rand.rand(@HEIGHT), @rand.rand(1..10)] #format [midx, midy, length]
+       line = [rand.rand(@WIDTH), rand.rand(@HEIGHT), rand.rand(1..10)] #format [midx, midy, length]
        for mover in line[1]-line[2]/2..line[1]+line[2]/2
          @tiles[line[0]][mover] = Tiles::Wall
        end
@@ -100,15 +100,16 @@ class Map
   def solid?(x, y)
     #first, makes sure that values of x and y
     #outside the boundaries of the screen wrap around
-    if(!@tiles[x/@TILESIZE])
-      x -= @WIDTH*@TILESIZE
+    x, y = x/@TILESIZE, y/@TILESIZE
+    if(x >= @WIDTH)
+      x -= @WIDTH
     end
-    if(!@tiles[x/@TILESIZE][y/@TILESIZE])
-      y -= @HEIGHT*@TILESIZE
+    if(y >= @HEIGHT)
+      y -= @HEIGHT
     end
     #this isn't necessary for x, y values less than 0
     #because ruby let's you access the end of an array with
     #negative numbers
-    @tiles[x/@TILESIZE][y/@TILESIZE] == Tiles::Wall
+    @tiles[x][y] == Tiles::Wall
   end
 end

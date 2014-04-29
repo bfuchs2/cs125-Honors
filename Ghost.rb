@@ -18,6 +18,7 @@ class Ghost < GameObject
     @player = window.player
     @image, @image2, @image3, @image4 = *Image.load_tiles(window, image, 15, 15, false)
     @count = 0
+    @pathAge = 0
     @flank = false
   end
   def draw
@@ -36,8 +37,8 @@ class Ghost < GameObject
     #  tempdir = loc    
     #end          
     #}#end decision making
+    tx, ty = @player.x, @player.y
     if flank and @player.dir != Direction::Still
-      tx, ty = @player.x, @player.y
       until(@map.solid?(tx, ty))
         if(@player.dir == Direction::Down)
           ty += 1
@@ -58,14 +59,28 @@ class Ghost < GameObject
       elsif(@player.dir == Direction::Right)
         tx -= 1
       end
-      node = self.aStar(tx/@TILESIZE, ty/@TILESIZE)
+    end #tx and ty have been found
+    if @path == nil or @path.length < 15 or @pathAge > 10
+      @path = self.aStar(tx/@TILESIZE, ty/@TILESIZE)
+      @pathAge = 0
     else
-      node = self.aStar
+      #to save on computation, rather than rebuilding the whole path, only part of it is rebuilt
+      @path.trim #this moves the part of the path near the ghost
+      @path = @path.parent #this retracts the part of the path near the player/target
+      if @path.h(tx/@TILESIZE, ty/@TILESIZE) > 6
+        @path = self.aStar(tx/@TILESIZE, ty/@TILESIZE)  
+      else #creates a short path using A* and appends the current path to that
+        @pathAge += 1
+        toAppend = @path
+        @path = self.aStar(tx/@TILESIZE, ty/@TILESIZE, toAppend.x, toAppend.y)
+        node = @path
+        node = node.parent while node.parent
+        node.parent = toAppend
+      end
     end
-    self.warp(node.coords.collect{|i| i * @TILESIZE}) if node
-    #self.changeDir(self.aStar)
-    #self.changeDir(tempdir[2]/@TILESIZE) if @dir == Direction::Still
-    update
+    node = @path
+    node = node.parent while node.parent
+    self.warp(node.coords.collect{|i| i * @TILESIZE})
   end
   
   #an implementation of A * 
@@ -88,8 +103,9 @@ class Ghost < GameObject
       queue.delete(current)
       #direction from the second node aka the one after the one the ghost is at
       if current.x == tx and current.y == ty
-        #TODO this is not the correct thing to return
-        return current.getTop
+        #TODO this may not be the right thing to return
+        current.trim
+        return current
         #print "the ghost is confused\n" # for debugging
       end
       @map.getSurrounding(current.x, current.y, false).each{ |n|
@@ -130,13 +146,23 @@ class Node # used by the A* function
   end
   #returns the second-to-top most node
   def getTop
-    return @parent.getTop if @parent.parent
+    return @parent.getTop if @parent
     self
+  end
+  def trim # removes the last node (which is the node of the space the ghost is occupying)
+    if @parent == nil or @parent.parent == nil
+      @parent = nil
+    else
+      @parent.trim
+    end
   end
   def coords
     [@x, @y]
   end
-  
+  def length
+    return 1 + @parent.length if @parent
+    1
+  end
   def toArray
     [@x, @y, @dir, @g]
   end

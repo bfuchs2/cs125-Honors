@@ -3,10 +3,10 @@ include Gosu
 
 class Game < Window
   attr_reader :map, :player, :ghost
-  def initialize
-    super 720, 540, false
+  def initialize(pixelW = 720, pixelH = 540)
+    super pixelW, pixelH, false
     self.caption = "Honors Project"
-    @map = Map.new(self)
+    @map = Map.new(self, pixelH, pixelW)
     @background = Image.new(self, "media/Space.png", true)
     @player = Player.new(self, 255, 360, "media/Test Sprite.png")
     @ghost = Ghost.new(self, 180, 180, "media/Test Sprite Enemy.png")
@@ -20,7 +20,7 @@ class Game < Window
   end
   
   def reset
-    @map = Map.new(self)
+    @map = Map.new(self, @map.HEIGHT*@map.TILESIZE, @map.WIDTH*@map.TILESIZE)
     @player = Player.new(self, 255, 360, "media/Test Sprite.png")
     @ghost = Ghost.new(self, 180, 180, "media/Test Sprite Enemy.png")
     @smartGhost = Ghost.new(self, 180, 400, "media/Test Sprite Enemy.png")
