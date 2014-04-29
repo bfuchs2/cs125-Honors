@@ -17,29 +17,38 @@ class Ghost < GameObject
     super
     @player = window.player
     @image, @image2, @image3, @image4 = *Image.load_tiles(window, image, 15, 15, false)
-    @count = 0
     @pathAge = 0
     @flank = false
+    @targetNode = Node.new(x, y, nil, 0)
   end
   def draw
     @image.draw(@x, @y, 1, 1.0, 1.0)
   end
   
   def move
-    return @count += 1 if @count < @TILESIZE/@@SPEED
-    @count = 0
-    #posdir= @map.getSurrounding(@x/@TILESIZE, @y/@TILESIZE, false)
-    #posdir.collect!{|i| i.collect{|x| x * 15}}
-    #tempdir = [@x, @y, Direction::Still*@TILESIZE]
-    #decision making happens here, should be more fleshed out
-    #posdir.each{ |loc|
-    #if ((loc[0] - @player.x)**2 + (loc[1] - @player.y)**2 < (tempdir[0] - @player.x)**2 + (tempdir[1] - @player.y)**2)
-    #  tempdir = loc    
-    #end          
-    #}#end decision making
+    if @x > @targetNode.x + @@SPEED
+      @x -= @@SPEED
+      return
+    end
+    if @x < @targetNode.x - @@SPEED
+      @x += @@SPEED
+      return
+    end
+    if @y > @targetNode.y + @@SPEED
+      @y -= @@SPEED
+      return
+    end
+    if @y < @targetNode.y - @@SPEED
+      @y += @@SPEED
+      return
+    end
+    @x, @y = *@targetNode.coords
     tx, ty = @player.x, @player.y
     if flank and @player.dir != Direction::Still
-      until(@map.solid?(tx, ty))
+      start = Time.now
+      fin = Time.now
+      until(@map.solid?(tx, ty) or fin - start > 0.1)
+        fin = Time.now
         if(@player.dir == Direction::Down)
           ty += 1
         elsif(@player.dir == Direction::Left)
@@ -59,8 +68,9 @@ class Ghost < GameObject
       elsif(@player.dir == Direction::Right)
         tx -= 1
       end
+      tx, ty = @player.x, @player.y if fin - start > 4
     end #tx and ty have been found
-    if @path == nil or @path.length < 15 or @pathAge > 10
+    if @path == nil or @path.length < 15 or @pathAge > @path.length * 2
       @path = self.aStar(tx/@TILESIZE, ty/@TILESIZE)
       @pathAge = 0
     else
@@ -73,14 +83,22 @@ class Ghost < GameObject
         @pathAge += 1
         toAppend = @path
         @path = self.aStar(tx/@TILESIZE, ty/@TILESIZE, toAppend.x, toAppend.y)
-        node = @path
-        node = node.parent while node.parent
-        node.parent = toAppend
+        if @path
+          node = @path
+          node = node.parent while node.parent
+          node.parent = toAppend
+        else
+          @path = toAppend
+        end
       end
     end
-    node = @path
-    node = node.parent while node.parent
-    self.warp(node.coords.collect{|i| i * @TILESIZE})
+    if @path
+      @targetNode = @path
+      @targetNode = @targetNode.parent while @targetNode.parent
+      @targetNode.x *= @TILESIZE
+      @targetNode.y *= @TILESIZE
+    end
+    #makes sure that the coordinates are on the right scale
   end
   
   #an implementation of A * 
@@ -90,6 +108,9 @@ class Ghost < GameObject
     if tx > @map.WIDTH or ty > @map.HEIGHT or tx < 0 or ty < 0
       return Node.new(x, y, nil, 0)
     end
+    print "finding path..."
+    start = Time.now
+    fin = Time.now
     evald = Array.new #nodes that have already been evaluated
     queue = [Node.new(x, y, nil, 0)]#the last element is the g value
     until queue.empty?
@@ -105,6 +126,7 @@ class Ghost < GameObject
       if current.x == tx and current.y == ty
         #TODO this may not be the right thing to return
         current.trim
+        print "100%\n"
         return current
         #print "the ghost is confused\n" # for debugging
       end
@@ -127,6 +149,12 @@ class Ghost < GameObject
           queue.push(node)  
         end
       }
+      #for debugging
+      if Time.now - fin > 0
+        fin = Time.now
+        print 1000* current.h(tx, ty)*0.1/((x - tx).abs + (y - ty).abs), "%"
+      end
+      return nil if Time.now - start > 5
     end
     nil
   end
