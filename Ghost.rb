@@ -26,6 +26,7 @@ class Ghost < GameObject
   end
   
   def move
+    return if @player.dir == Direction::Still
     if @x > @targetNode.x + @@SPEED
       @x -= @@SPEED
       return
@@ -44,11 +45,8 @@ class Ghost < GameObject
     end
     @x, @y = *@targetNode.coords
     tx, ty = @player.x, @player.y
-    if flank and @player.dir != Direction::Still
-      start = Time.now
-      fin = Time.now
-      until(@map.solid?(tx, ty) or fin - start > 0.1)
-        fin = Time.now
+    if flank
+      until @map.solid?(tx, ty) or tx == 0 or tx == (@map.WIDTH * @TILESIZE) or ty == 0 or ty == (@map.HEIGHT * @TILESIZE)
         if(@player.dir == Direction::Down)
           ty += 1
         elsif(@player.dir == Direction::Left)
@@ -68,7 +66,6 @@ class Ghost < GameObject
       elsif(@player.dir == Direction::Right)
         tx -= 1
       end
-      tx, ty = @player.x, @player.y if fin - start > 4
     end #tx and ty have been found
     if @path == nil or @path.length < 15 or @pathAge > @path.length * 2
       @path = self.aStar(tx/@TILESIZE, ty/@TILESIZE)
