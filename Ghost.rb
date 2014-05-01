@@ -19,7 +19,7 @@ class Ghost < GameObject
     @image, @image2, @image3, @image4 = *Image.load_tiles(window, image, 15, 15, false)
     @pathAge = 0
     @flank = false
-    @targetNode = Node.new(x, y, nil, 0)
+    @targetNode = Node.new(x, y, 0)
   end
   def draw
     @image.draw(@x, @y, 1, 1.0, 1.0)
@@ -72,8 +72,13 @@ class Ghost < GameObject
       @pathAge = 0
     else
       #to save on computation, rather than rebuilding the whole path, only part of it is rebuilt
+      shouldQuit = @path.timeOut and @path.h(tx/@TILESIZE, ty/@TILESIZE) < 10
       @path.trim #this moves the part of the path near the ghost
       @path = @path.parent #this retracts the part of the path near the player/target
+      if shouldQuit
+        @path.timeOut = true
+        return
+      end
       if @path.h(tx/@TILESIZE, ty/@TILESIZE) > 6
         @path = self.aStar(tx/@TILESIZE, ty/@TILESIZE)  
       else #creates a short path using A* and appends the current path to that
@@ -105,11 +110,9 @@ class Ghost < GameObject
     if tx > @map.WIDTH or ty > @map.HEIGHT or tx < 0 or ty < 0
       return Node.new(x, y, nil, 0)
     end
-    print "finding path..."
     start = Time.now
-    fin = Time.now
     evald = Array.new #nodes that have already been evaluated
-    queue = [Node.new(x, y, nil, 0)]#the last element is the g value
+    queue = [Node.new(x, y, 0)]#the last element is the g value
     until queue.empty?
       #queue.each{ |q| print q.toArray, "..."}
       #print "\n" #for debugging
@@ -121,9 +124,7 @@ class Ghost < GameObject
       queue.delete(current)
       #direction from the second node aka the one after the one the ghost is at
       if current.x == tx and current.y == ty
-        #TODO this may not be the right thing to return
         current.trim
-        print "100%\n"
         return current
         #print "the ghost is confused\n" # for debugging
       end
@@ -146,12 +147,12 @@ class Ghost < GameObject
           queue.push(node)  
         end
       }
-      #for debugging
-      if Time.now - fin > 0
-        fin = Time.now
-        print 1000* current.h(tx, ty)*0.1/((x - tx).abs + (y - ty).abs), "%"
+      #just gives up if it's been trying to find a path for more than 5 seconds
+      if Time.now - start > 5
+        current.trim
+        current.timeOut = true;
+        return current
       end
-      return nil if Time.now - start > 5
     end
     nil
   end
@@ -159,12 +160,12 @@ class Ghost < GameObject
 end
 
 class Node # used by the A* function
-  attr_accessor :x, :y, :dir, :g, :parent
-  def initialize(x, y, dir, g)
-    @x, @y, @dir, @g = x, y, dir, g
+  attr_accessor :x, :y, :g, :parent, :timeOut
+  def initialize(x, y, g)
+    @x, @y, @g = x, y, g
   end
-  def self.toNode(array) #format: [x, y, dir]
-    Node.new(array[0], array[1], array[2], nil)
+  def self.toNode(array) #format: [x, y]
+    Node.new(array[0], array[1], nil)
   end
   def f(tx, ty)
     @g + h(tx, ty)
@@ -188,8 +189,8 @@ class Node # used by the A* function
     return 1 + @parent.length if @parent
     1
   end
-  def toArray
-    [@x, @y, @dir, @g]
+  def toArray #for debugging
+    [@x, @y, @g]
   end
   
   def h(tx, ty)
