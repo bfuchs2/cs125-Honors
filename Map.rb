@@ -1,77 +1,123 @@
+require 'rubygems'
 require 'gosu'
+#require_relative 'Main'
+#require_relative 'Sprite'
+require_relative 'game_object'
 include Gosu
 
-class Game < Window
-  attr_reader :map, :player, :ghost
-  def initialize(pixelW = 720, pixelH = 540)
-    super pixelW, pixelH, false
-    self.caption = "Honors Project"
-    @font = Gosu::Font.new(self, Gosu::default_font_name, 20)
-    @map = Map.new(self, pixelH, pixelW)
-    @background = Image.new(self, "media/Space.png", true)
-    @player = Player.new(self, 255, 360, "media/Test Sprite.png")
-    @ghost = Ghost.new(self, 180, 180, "media/Test Sprite Enemy.png")
-    @smartGhost = Ghost.new(self, 180, 200, "media/Test Sprite Enemy.png")
-    @smartGhost.flank = true
-    @pause = false
-    @map.generate([@ghost, @player, @smartGhost])
-    @goal = Goal.new(self, player, "media/Test Sprite.png")
-    @text = Image.new(self, "media/TestPause.png", true)
-    @gameover = Image.new(self, "media/TestGameOver.png", true)
-    @fail = false
+module Tiles
+  Space = 0
+  Wall = 1
+end
+
+class Map
+  attr_reader :WIDTH, :HEIGHT, :TILESIZE
+  def initialize(window, pixelH, pixelW)
+    #Loads 20x20 pix tileset
+    #two @s means it's a static variable
+    @TILESET = Image.load_tiles(window, "media/Test Tileset.png", 20, 20, true)
+    @TILESIZE = 15
+    #Reads map.txt line by line and turns it into tiles
+    @HEIGHT = pixelH/@TILESIZE
+    @WIDTH = pixelW/@TILESIZE
+     @tiles = Array.new(@WIDTH){ |i|
+        Array.new(@HEIGHT, Tiles::Space)
+      }
   end
   
-  def reset
-    @map = Map.new(self, @map.HEIGHT*@map.TILESIZE, @map.WIDTH*@map.TILESIZE)
-    @player = Player.new(self, 255, 360, "media/Test Sprite.png")
-    @ghost = Ghost.new(self, 180, 180, "media/Test Sprite Enemy.png")
-    @smartGhost = Ghost.new(self, 180, 400, "media/Test Sprite Enemy.png")
-    @smartGhost.flank = true
-    @pause = false
-    @map.generate([@ghost, @player, @smartGhost])
-    @goal = Goal.new(self, player, "media/Test Sprite.png")
-    @fail = false
+  def generate(objects)
+    rand = Random.new
+     for l in 0..10 #generates horizontal lines randomly
+       line = [rand.rand(@WIDTH), rand.rand(@HEIGHT), rand.rand(1..10)] #format [midx, midy, length]
+       for mover in line[0]-line[2]/2..line[0]+line[2]/2
+         begin
+          @tiles[mover][line[1]] = Tiles::Wall
+         rescue
+         end
+       end
+     end
+     for l in 0..10 #same thing now with vertical lines
+       line = [rand.rand(@WIDTH), rand.rand(@HEIGHT), rand.rand(1..10)] #format [midx, midy, length]
+       for mover in line[1]-line[2]/2..line[1]+line[2]/2
+         @tiles[line[0]][mover] = Tiles::Wall
+       end
+     end
+     for x in 0..@WIDTH-1
+       for y in 0..@HEIGHT-1
+         if(getSurrounding(x, y).length > 6)
+           @tiles[x][y] = Tiles::Wall
+         end
+       end
+     end
+     #makes sure there's room for the game objects to spawn
+     objects.each do |go|
+       @tiles[go.x/@TILESIZE][go.y/@TILESIZE] = Tiles::Space
+     end
+     @tiles
   end
   
-  def button_down(id)
-    if id == KbP
-      @pause = !@pause
+  def getSurrounding(x, y, diag = true)
+    #returns a list of the coords surrounding (x, y) that can be walked on
+    array = Array.new
+    if(x < @tiles.length and @tiles[x][y + 1] == Tiles::Space)
+      array.push([x, y+1, Direction::Down])
     end
+    if(diag and x + 1 < @tiles.length and @tiles[x + 1][y + 1] == Tiles::Space)
+      array.push([x + 1, y + 1])
+    end
+    if(x + 1< @tiles.length and @tiles[x + 1][y] == Tiles::Space)
+      array.push([x + 1, y, Direction::Right])
+    end
+    if(diag and y > 0 and x + 1< @tiles.length and @tiles[x + 1][y - 1] == Tiles::Space)
+      array.push([x + 1, y-1])
+    end
+    if(y > 0 and x < @tiles.length and @tiles[x][y - 1] == Tiles::Space)
+      array.push([x, y -1, Direction::Up])
+    end
+    if(diag and x > 0 and y > 0 and x - 1< @tiles.length and @tiles[x - 1][y - 1] == Tiles::Space)
+      array.push([x - 1, y - 1])
+    end
+    if(x > 0 and x - 1< @tiles.length and @tiles[x - 1][y] == Tiles::Space)
+      array.push([x - 1, y, Direction::Left])
+    end
+    if(diag and x > 0 and x - 1< @tiles.length and @tiles[x - 1][y + 1] == Tiles::Space)
+      array.push([x - 1, y + 1])
+    end
+    array
   end
 
   def draw
-    @background.draw 0,0,0
-    @map.draw
-    @player.draw
-    @goal.draw
-    @ghost.draw
-    @smartGhost.draw
-    @font.draw("Score: #{@goal.points}", 10, 10, 0, 1.0, 1.0, 0xffffff00)
-    if @pause then @text.draw 270, 180, 50 end
-    if @fail then @gameover.draw 270,180,50 end
+    @HEIGHT.times do |y|
+      @WIDTH.times do|x|
+        tile = @tiles[x][y]
+        if tile == Tiles::Wall
+          @TILESET[tile].draw(x*@TILESIZE, y*@TILESIZE, 0)
+        end
+      end
+    end
+  end
+
+  def solid?(x, y)
+    #first, makes sure that values of x and y
+    #outside the boundaries of the screen wrap around
+    x, y = x/@TILESIZE, y/@TILESIZE
+    if(x >= @WIDTH)
+      x -= @WIDTH
+    end
+    if(y >= @HEIGHT)
+      y -= @HEIGHT
+    end
+    #this isn't necessary for x, y values less than 0
+    #because ruby let's you access the end of an array with
+    #negative numbers
+    @tiles[x][y] == Tiles::Wall
   end
   
-  def update
-    if !@pause and !@fail
-    if @player.fail?(@ghost.x, @ghost.y) or @player.fail?(@smartGhost.x, @smartGhost.y)
-      @fail = true
-      if button_down? KbEscape then close end
-    end
-    dir = Direction::Right if button_down? KbRight
-    dir = Direction::Left if button_down? KbLeft
-    dir = Direction::Up if button_down? KbUp
-    dir = Direction::Down if button_down? KbDown
-    if(dir)
-      @player.changeDir(dir)
-    end
-    @player.update
-    @goal.update
-    @ghost.move
-    @smartGhost.move
-    elsif button_down? KbEscape
-      close
-    elsif @fail and button_down? KbR
-      reset
-    end
-  end      
+  def getrandomtile
+    begin 
+      x= rand(@WIDTH)
+      y = rand(@HEIGHT)
+    end until @tiles[x][y] != Tiles::Wall
+    return x *@TILESIZE, y*@TILESIZE
+  end
 end
