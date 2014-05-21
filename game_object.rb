@@ -14,7 +14,7 @@ class GameObject
   attr_accessor :dir
     
   def initialize(window, x, y, image)
-    @@SPEED = 3
+    @@SPEED = 2
     @x, @y = x, y
     @map = window.map
     @TILESIZE = window.map.TILESIZE

@@ -117,8 +117,8 @@ class Ghost < GameObject
       #queue.each{ |q| print q.toArray, "..."}
       #print "\n" #for debugging
       current = queue[0]#finds the node in queue with the lowest f value
-      for i in 1..queue.length-1
-        current = queue[i] if queue[i].f(tx, ty) < current.f(tx, ty)
+      queue.each do |q|
+        current = q if q.f(tx, ty) < current.f(tx, ty)
       end
       evald.push(current)#move current from 'queue' to 'evald'
       queue.delete(current)
